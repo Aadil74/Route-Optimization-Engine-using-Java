@@ -1,0 +1,110 @@
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-08-04 21:28:53
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+
+  Journey #1
+  Timestamp : 2026-08-04 21:30:25
+  From      : Riverside Bus Depot
+  To        : Industrial Zone Stop
+  Route     : Riverside Bus Depot → Central Terminal → Eastwood Junction → Industrial Zone Stop
+  Time      : 41 minutes
+  Stops     : 2 intermediate
+  Advisory  : 📋 Travel Advisory (Standard Mode):   ⚠ Long journey — consider traveling off-peak (before 8AM or after 7PM).   ⚠ Multiple transfers — keep your journey plan handy.   💡 Tip: Validate your ticket at every boarding point.    [To activate AI advisories: add your API key in AIAdvisor.java]
+  ─────────────────────────────────────────────────────
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-08-10 08:36:05
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-08-10 08:48:50
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-08-10 08:50:26
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+
+  Journey #1
+  Timestamp : 2026-08-10 08:50:53
+  From      : Adyar Bus Depot
+  To        : Anna Nagar Tower
+  Route     : Adyar Bus Depot → T-Nagar Bus Terminus → Egmore → Anna Nagar Tower
+  Time      : 62 minutes
+  Stops     : 2 intermediate
+  Advisory  : 📋 Travel Advisory (Standard Mode):   ⚠ Long journey — consider traveling off-peak (before 8AM or after 7PM).   ⚠ Multiple transfers — keep your journey plan handy.   💡 Tip: Validate your ticket at every boarding point.    [To activate AI advisories: add your API key in AIAdvisor.java]
+  ─────────────────────────────────────────────────────
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-09-22 16:21:26
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-09-23 22:34:31
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+
+  Journey #1
+  Timestamp : 2026-09-23 22:34:49
+  From      : Anna Nagar Tower
+  To        : Velachery
+  Route     : Anna Nagar Tower → Koyambedu CMBT → Vadapalani → Guindy → Velachery
+  Time      : 70 minutes
+  Stops     : 3 intermediate
+  Advisory  : 📋 Travel Advisory (Standard Mode):   ⚠ Long journey — consider traveling off-peak (before 8AM or after 7PM).   ⚠ Multiple transfers — keep your journey plan handy.   💡 Tip: Validate your ticket at every boarding point.    [To activate AI advisories: add your API key in AIAdvisor.java]
+  ─────────────────────────────────────────────────────
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-09-23 22:35:23
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-09-23 22:36:57
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-09-24 23:07:49
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-10-04 19:43:27
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-10-04 19:48:03
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-10-04 19:52:22
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-10-04 19:54:04
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════
+
+  Journey #1
+  Timestamp : 2026-10-04 19:55:44
+  From      : Chromepet
+  To        : Chennai Central
+  Route     : Chromepet → Guindy → Chennai Central
+  Time      : 55 minutes
+  Stops     : 1 intermediate
+  Advisory  : 📋 Travel Advisory:   ⚠ Long journey — consider travelling before 8AM or after 7PM.   ✔ One transfer — allow 5 minutes at the interchange.   💡 Tip: Validate your ticket at every boarding point.    [Add Gemini API key in AIAdvisor.java to enable AI advisories]
+  ─────────────────────────────────────────────────────
+════════════════════════════════════════════════════════
+  SESSION STARTED: 2026-10-07 07:06:27
+  SmartTransit — AI-Assisted Urban Route Optimization
+  Author: Ahmed Aadil
+════════════════════════════════════════════════════════

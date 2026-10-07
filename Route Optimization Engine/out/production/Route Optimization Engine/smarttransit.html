@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SmartTransit — Chennai Route Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f1e; --surface:#111827; --surface2:#1a2235; --border:#1e2d45;
+    --accent:#3b82f6; --accent2:#06b6d4; --success:#10b981;
+    --warning:#f59e0b; --danger:#ef4444; --text:#f1f5f9; --muted:#64748b; --card-r:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;height:100vh;overflow:hidden;}
+
+  /* HEADER */
+  header{background:linear-gradient(135deg,#0d1b35,#0a1628);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .logo-text{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;}
+  .logo-sub{font-size:10px;color:var(--muted);}
+  .author-badge{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+
+  /* LAYOUT */
+  .app{display:grid;grid-template-columns:250px 1fr 320px;height:calc(100vh - 56px);overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:14px;gap:16px;}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+  select,button{width:100%;font-family:'Inter',sans-serif;font-size:13px;border-radius:8px;border:1px solid var(--border);outline:none;transition:border-color .2s;}
+  select{background:var(--surface2);color:var(--text);padding:9px 30px 9px 12px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+  select:focus{border-color:var(--accent);}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group label{font-size:12px;color:var(--muted);font-weight:500;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;padding:10px;font-weight:600;cursor:pointer;border:none;font-size:13px;}
+  .btn-primary:hover{opacity:.9;}
+  .btn-secondary{background:var(--surface2);color:var(--text);padding:8px;font-weight:500;cursor:pointer;font-size:12px;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .station-list{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;}
+  .station-pill{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;background:var(--surface2);border:1px solid transparent;font-size:11px;cursor:pointer;transition:border-color .15s;}
+  .station-pill:hover{border-color:var(--accent);}
+  .station-pill.hl{border-color:var(--accent2);background:rgba(6,182,212,.08);}
+  .type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .type-TRAIN{background:var(--accent);} .type-BUS{background:var(--success);} .type-METRO{background:var(--accent2);}
+  .s-name{font-weight:500;flex:1;color:var(--text);} .s-zone{color:var(--muted);font-size:10px;}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);}
+
+  /* MAP */
+  .map-wrap{position:relative;background:#0b1220;overflow:hidden;}
+  #mapCanvas{width:100%;height:100%;cursor:grab;}
+  .map-badge{position:absolute;bottom:10px;left:10px;background:rgba(10,15,30,.88);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;color:var(--muted);backdrop-filter:blur(6px);z-index:10;pointer-events:none;}
+  .map-legend{position:absolute;top:10px;right:10px;background:rgba(10,15,30,.88);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:10px;color:var(--muted);z-index:10;display:flex;flex-direction:column;gap:4px;}
+  .map-legend-row{display:flex;align-items:center;gap:6px;}
+
+  /* PANEL */
+  .panel{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;}
+  .panel-inner{padding:18px;display:flex;flex-direction:column;gap:14px;flex:1;}
+  .panel-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;gap:10px;padding:30px 16px;}
+  .panel-welcome .wi{font-size:40px;}
+  .panel-welcome h3{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;}
+  .panel-welcome p{color:var(--muted);font-size:12px;max-width:240px;}
+  .quick-routes{display:flex;flex-direction:column;gap:5px;margin-top:4px;width:100%;}
+  .quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;transition:border-color .15s,color .15s;}
+  .quick-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .stat-row{display:flex;gap:8px;}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;flex:1;}
+  .stat-value{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .stat-label{font-size:10px;color:var(--muted);margin-top:3px;}
+  .card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--card-r);padding:14px;}
+  .card-title{font-size:10px;font-weight:600;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+  .route-steps{display:flex;flex-direction:column;}
+  .route-step{display:flex;align-items:flex-start;gap:10px;}
+  .step-left{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0;}
+  .step-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;z-index:1;}
+  .step-dot.depart{background:var(--accent);color:#fff;} .step-dot.transit{background:var(--surface);border:2px solid var(--accent2);color:var(--accent2);} .step-dot.arrive{background:var(--success);color:#fff;}
+  .step-line{width:2px;flex:1;min-height:18px;background:linear-gradient(to bottom,var(--accent),var(--accent2));opacity:.25;margin:2px 0;}
+  .step-content{padding:2px 0 14px;flex:1;}
+  .step-name{font-weight:600;font-size:13px;color:var(--text);}
+  .step-meta{display:flex;align-items:center;gap:6px;margin-top:2px;}
+  .step-type{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:.3px;}
+  .step-type.TRAIN{background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.3);}
+  .step-type.BUS{background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3);}
+  .step-type.METRO{background:rgba(6,182,212,.15);color:var(--accent2);border:1px solid rgba(6,182,212,.3);}
+  .leg-time{font-size:10px;color:var(--muted);}
+  .advisory-box{background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(6,182,212,.04));border:1px solid rgba(59,130,246,.2);border-radius:var(--card-r);padding:14px;}
+  .advisory-header{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+  .advisory-header span{font-size:14px;} .advisory-header strong{font-size:12px;font-weight:600;color:var(--accent);}
+  .advisory-text{font-size:13px;color:var(--text);line-height:1.65;}
+  .advisory-tip{margin-top:8px;padding:8px 12px;background:rgba(245,158,11,.07);border-left:3px solid var(--warning);border-radius:0 6px 6px 0;font-size:12px;color:#fcd34d;}
+  .stats-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .stats-table th{text-align:left;padding:7px 8px;color:var(--muted);font-weight:500;font-size:10px;border-bottom:1px solid var(--border);}
+  .stats-table td{padding:7px 8px;border-bottom:1px solid rgba(30,45,69,.5);}
+  .stats-table tr:last-child td{border-bottom:none;}
+  .conn-bar-wrap{display:flex;align-items:center;gap:6px;}
+  .conn-bar{height:5px;border-radius:3px;background:linear-gradient(to right,var(--accent),var(--accent2));}
+  .conn-num{font-size:10px;color:var(--muted);width:14px;text-align:right;}
+  .alert-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;}
+  .alert-badge.warn{background:rgba(245,158,11,.15);color:var(--warning);border:1px solid rgba(245,158,11,.3);}
+  .alert-badge.ok{background:rgba(16,185,129,.1);color:var(--success);border:1px solid rgba(16,185,129,.2);}
+  .no-route{text-align:center;padding:30px 20px;color:var(--muted);}
+  .no-route .nr-icon{font-size:36px;margin-bottom:10px;} .no-route h3{color:var(--danger);margin-bottom:6px;font-size:15px;}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:20px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚇</div>
+    <div>
+      <div class="logo-text">SmartTransit</div>
+      <div class="logo-sub">Chennai Route Optimization Engine</div>
+    </div>
+  </div>
+  <div class="author-badge">Ahmed Aadil</div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="section-label">Find Route</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="form-group"><label>From</label><select id="originSelect"></select></div>
+        <div class="form-group"><label>To</label><select id="destSelect"></select></div>
+        <button class="btn-primary" onclick="findRoute()">Calculate Shortest Route</button>
+        <button class="btn-secondary" onclick="showStats()">Network Report</button>
+      </div>
+    </div>
+    <div>
+      <div class="section-label">Transport Types</div>
+      <div class="legend">
+        <div class="legend-item"><div class="type-dot type-TRAIN"></div> Train</div>
+        <div class="legend-item"><div class="type-dot type-BUS"></div> Bus</div>
+        <div class="legend-item"><div class="type-dot type-METRO"></div> Metro</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label">Stations</div>
+      <div class="station-list" id="stationList"></div>
+    </div>
+  </aside>
+
+  <!-- MAP -->
+  <div class="map-wrap">
+    <canvas id="mapCanvas"></canvas>
+    <div class="map-badge" id="mapBadge">All 13 Chennai stations • Select a route to highlight path</div>
+    <div class="map-legend">
+      <div style="font-size:10px;color:var(--text);font-weight:600;margin-bottom:2px;">Map Legend</div>
+      <div class="map-legend-row"><svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#1e2d45" stroke-width="2"/></svg><span>Connection</span></div>
+      <div class="map-legend-row"><svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/></svg><span>Active Route</span></div>
+      <div class="map-legend-row"><div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;"></div><span>Train</span></div>
+      <div class="map-legend-row"><div style="width:10px;height:10px;border-radius:50%;background:#10b981;"></div><span>Bus</span></div>
+      <div class="map-legend-row"><div style="width:10px;height:10px;border-radius:50%;background:#06b6d4;"></div><span>Metro</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="panel-inner" id="panelInner">
+      <div class="panel-welcome" id="welcomeState">
+        <div class="wi">🗺️</div>
+        <h3>Chennai Transit Navigator</h3>
+        <p>Pick origin & destination, then find the optimal route via Dijkstra's algorithm.</p>
+        <div class="quick-routes">
+          <button class="quick-btn" onclick="quickRoute(0,6)">🚇 Central → Velachery</button>
+          <button class="quick-btn" onclick="quickRoute(4,5)">🚆 Tambaram → Anna Nagar</button>
+          <button class="quick-btn" onclick="quickRoute(1,9)">🚌 Koyambedu → Adyar</button>
+          <button class="quick-btn" onclick="quickRoute(7,8)">✈️ Airport → Egmore</button>
+        </div>
+      </div>
+      <div id="resultsArea" style="display:none;flex-direction:column;gap:14px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const STATIONS = [
+  {id:0,  name:"Chennai Central",      type:"TRAIN", zone:"CENTRAL", lat:13.0827, lng:80.2707},
+  {id:1,  name:"Koyambedu CMBT",       type:"BUS",   zone:"WEST",    lat:13.0694, lng:80.1948},
+  {id:2,  name:"Guindy",               type:"METRO", zone:"SOUTH",   lat:13.0067, lng:80.2206},
+  {id:3,  name:"T-Nagar Bus Terminus", type:"BUS",   zone:"CENTRAL", lat:13.0418, lng:80.2341},
+  {id:4,  name:"Tambaram",             type:"TRAIN", zone:"SOUTH",   lat:12.9249, lng:80.1000},
+  {id:5,  name:"Anna Nagar Tower",     type:"METRO", zone:"NORTH",   lat:13.0850, lng:80.2101},
+  {id:6,  name:"Velachery",            type:"METRO", zone:"SOUTH",   lat:12.9815, lng:80.2180},
+  {id:7,  name:"Chennai Airport",      type:"TRAIN", zone:"SOUTH",   lat:12.9941, lng:80.1709},
+  {id:8,  name:"Egmore",               type:"TRAIN", zone:"CENTRAL", lat:13.0732, lng:80.2609},
+  {id:9,  name:"Adyar Bus Depot",      type:"BUS",   zone:"SOUTH",   lat:13.0012, lng:80.2565},
+  {id:10, name:"Porur Junction",       type:"BUS",   zone:"WEST",    lat:13.0358, lng:80.1573},
+  {id:11, name:"Chromepet",            type:"TRAIN", zone:"SOUTH",   lat:12.9516, lng:80.1462},
+  {id:12, name:"Vadapalani",           type:"METRO", zone:"CENTRAL", lat:13.0514, lng:80.2120},
+];
+
+const N = STATIONS.length;
+const matrix = Array.from({length:N},()=>new Array(N).fill(0));
+function addRoute(a,b,t){matrix[a][b]=t;matrix[b][a]=t;}
+addRoute(0,8,10);addRoute(0,3,20);addRoute(0,5,35);addRoute(0,2,30);
+addRoute(8,5,25);addRoute(8,3,15);
+addRoute(1,5,20);addRoute(1,10,18);addRoute(1,12,15);
+addRoute(3,12,12);addRoute(3,2,18);addRoute(3,9,22);
+addRoute(2,7,12);addRoute(2,6,15);addRoute(2,11,25);
+addRoute(7,11,18);addRoute(11,4,15);
+addRoute(6,9,20);addRoute(6,4,30);
+addRoute(10,12,20);addRoute(10,1,18);
+addRoute(12,2,20);addRoute(9,4,35);
+
+const TYPE_COLOR = {TRAIN:"#3b82f6", BUS:"#10b981", METRO:"#06b6d4"};
+
+// ============================================================
+//  CANVAS MAP ENGINE
+// ============================================================
+const canvas  = document.getElementById("mapCanvas");
+const ctx     = canvas.getContext("2d");
+let activePath = null;
+
+// Map projection bounds — fit Chennai in canvas
+const LAT_MAX=13.12, LAT_MIN=12.90, LNG_MIN=80.13, LNG_MAX=80.30;
+
+function project(lat, lng, W, H){
+  const PAD = 50;
+  const x = PAD + ((lng - LNG_MIN)/(LNG_MAX - LNG_MIN)) * (W - PAD*2);
+  const y = PAD + ((LAT_MAX - lat)/(LAT_MAX - LAT_MIN)) * (H - PAD*2);
+  return {x, y};
+}
+
+function resizeCanvas(){
+  const wrap = canvas.parentElement;
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  drawMap();
+}
+
+// Animated dash offset for route line
+let dashOffset = 0;
+let animFrame  = null;
+
+function drawMap(){
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle = "#0b1220";
+  ctx.fillRect(0,0,W,H);
+
+  // Subtle grid lines
+  ctx.strokeStyle = "rgba(30,45,69,0.3)";
+  ctx.lineWidth = 1;
+  for(let x=0; x<W; x+=60){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0; y<H; y+=60){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Draw all connections (faint)
+  for(let i=0;i<N;i++){
+    for(let j=i+1;j<N;j++){
+      if(matrix[i][j]>0){
+        const p1 = project(STATIONS[i].lat, STATIONS[i].lng, W, H);
+        const p2 = project(STATIONS[j].lat, STATIONS[j].lng, W, H);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = "rgba(30,45,80,0.9)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([]);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Draw active route (animated amber)
+  if(activePath && activePath.length > 1){
+    for(let i=0;i<activePath.length-1;i++){
+      const p1 = project(STATIONS[activePath[i]].lat,   STATIONS[activePath[i]].lng,   W, H);
+      const p2 = project(STATIONS[activePath[i+1]].lat, STATIONS[activePath[i+1]].lng, W, H);
+
+      // Glow
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y);
+      ctx.strokeStyle="rgba(245,158,11,0.15)"; ctx.lineWidth=10; ctx.setLineDash([]); ctx.stroke();
+
+      // Main animated dashed line
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y);
+      ctx.strokeStyle="#f59e0b"; ctx.lineWidth=3;
+      ctx.setLineDash([10,5]);
+      ctx.lineDashOffset = -dashOffset;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Draw all station nodes
+  STATIONS.forEach(s => {
+    const p = project(s.lat, s.lng, W, H);
+    const isOnRoute = activePath && activePath.includes(s.id);
+    const isDepart  = activePath && s.id === activePath[0];
+    const isArrive  = activePath && s.id === activePath[activePath.length-1];
+
+    let color = TYPE_COLOR[s.type];
+    let radius = 7;
+    let glowColor = color + "66";
+
+    if(isDepart)       { color="#3b82f6"; radius=10; glowColor="rgba(59,130,246,0.4)"; }
+    else if(isArrive)  { color="#10b981"; radius=10; glowColor="rgba(16,185,129,0.4)"; }
+    else if(isOnRoute) { color="#f59e0b"; radius=9;  glowColor="rgba(245,158,11,0.4)"; }
+
+    // Glow ring
+    if(isOnRoute || isDepart || isArrive){
+      ctx.beginPath(); ctx.arc(p.x, p.y, radius+5, 0, Math.PI*2);
+      ctx.fillStyle = glowColor; ctx.fill();
+    }
+
+    // Outer ring
+    ctx.beginPath(); ctx.arc(p.x, p.y, radius+2, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
+
+    // Main dot
+    ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+
+    // White border
+    ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
+    ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth=1.5; ctx.stroke();
+
+    // Label
+    ctx.font = isOnRoute ? "bold 11px Inter,sans-serif" : "10px Inter,sans-serif";
+    ctx.fillStyle = isOnRoute ? "#f1f5f9" : "#94a3b8";
+    ctx.textAlign = "center";
+
+    // Position label above or below based on lat to avoid overlap
+    const labelY = p.y + radius + 13;
+    ctx.fillText(s.name.split(" ")[0], p.x, labelY);
+  });
+}
+
+function animate(){
+  dashOffset = (dashOffset + 0.5) % 30;
+  drawMap();
+  animFrame = requestAnimationFrame(animate);
+}
+
+function startAnimation(){ if(!animFrame) animate(); }
+function stopAnimation(){ if(animFrame){ cancelAnimationFrame(animFrame); animFrame=null; } }
+
+// ============================================================
+//  DIJKSTRA
+// ============================================================
+function dijkstra(originId, destId){
+  const INF=999999;
+  const dist=new Array(N).fill(INF);
+  const visited=new Array(N).fill(false);
+  const prev=new Array(N).fill(-1);
+  dist[originId]=0;
+  for(let iter=0;iter<N;iter++){
+    let current=-1;
+    for(let i=0;i<N;i++) if(!visited[i]&&(current===-1||dist[i]<dist[current])) current=i;
+    if(dist[current]===INF) break;
+    visited[current]=true;
+    if(current===destId) break;
+    for(let nb=0;nb<N;nb++){
+      const t=matrix[current][nb];
+      if(t>0&&!visited[nb]){
+        const nd=dist[current]+t;
+        if(nd<dist[nb]){dist[nb]=nd;prev[nb]=current;}
+      }
+    }
+  }
+  if(dist[destId]===INF) return null;
+  const path=[];let step=destId;
+  while(step!==-1){path.push(step);step=prev[step];}
+  path.reverse();
+  return {path,totalTime:dist[destId]};
+}
+
+// ============================================================
+//  ADVISORY
+// ============================================================
+function getAdvisory(result){
+  let main="",tip="";
+  if(result.totalTime<=20) main="Short, efficient journey — you'll be there in no time.";
+  else if(result.totalTime<=40) main="Moderate journey. During peak hours (8–10 AM, 5–8 PM), allow an extra 10–15 minutes.";
+  else main="Longer journey across Chennai. Consider travelling before 8 AM or after 7 PM to avoid congestion.";
+  const stops=result.path.length-2;
+  if(stops===0){main+=" Direct route — no transfers needed.";tip="💡 Validate your ticket at boarding.";}
+  else if(stops===1){main+=" One transfer required — allow 5 minutes at the interchange.";tip="💡 Keep your ticket ready at the transfer point.";}
+  else{main+=` ${stops} intermediate stops — keep your journey plan handy.`;tip="💡 Check connection times at each interchange.";}
+  return {main,tip};
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+function init(){
+  const oSel=document.getElementById("originSelect");
+  const dSel=document.getElementById("destSelect");
+  const sList=document.getElementById("stationList");
+
+  STATIONS.forEach(s=>{
+    [oSel,dSel].forEach(sel=>{
+      const opt=document.createElement("option");
+      opt.value=s.id; opt.textContent=`${s.name} (${s.type})`;
+      sel.appendChild(opt);
+    });
+    const pill=document.createElement("div");
+    pill.className="station-pill"; pill.id=`pill-${s.id}`;
+    pill.innerHTML=`<div class="type-dot type-${s.type}"></div><span class="s-name">${s.name}</span><span class="s-zone">${s.zone}</span>`;
+    pill.onclick=()=>{
+      document.querySelectorAll(".station-pill").forEach(p=>p.classList.remove("hl"));
+      pill.classList.add("hl");
+    };
+    sList.appendChild(pill);
+  });
+  oSel.value=0; dSel.value=4;
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+}
+
+// ============================================================
+//  FIND ROUTE
+// ============================================================
+function findRoute(){
+  const originId=parseInt(document.getElementById("originSelect").value);
+  const destId=parseInt(document.getElementById("destSelect").value);
+  if(originId===destId){showError("Origin and destination cannot be the same station.");return;}
+  showLoading();
+  setTimeout(()=>{
+    const result=dijkstra(originId,destId);
+    document.getElementById("welcomeState").style.display="none";
+    const area=document.getElementById("resultsArea");
+    area.style.display="flex"; area.innerHTML="";
+
+    if(!result){
+      area.innerHTML=`<div class="no-route"><div class="nr-icon">🚫</div><h3>No Route Found</h3><p>These stations are not connected in the current network.</p></div>`;
+      activePath=null; stopAnimation(); drawMap();
+      return;
+    }
+
+    // Update map
+    activePath=result.path;
+    startAnimation();
+    document.getElementById("mapBadge").textContent=
+      `Route: ${STATIONS[result.path[0]].name} → ${STATIONS[result.path[result.path.length-1]].name} · ${result.totalTime} min`;
+
+    const advisory=getAdvisory(result);
+    const stops=result.path.length-2;
+
+    area.innerHTML+=`
+      <div class="stat-row">
+        <div class="stat"><div class="stat-value">${result.totalTime}</div><div class="stat-label">minutes</div></div>
+        <div class="stat"><div class="stat-value">${result.path.length}</div><div class="stat-label">stations</div></div>
+        <div class="stat"><div class="stat-value">${stops}</div><div class="stat-label">transfers</div></div>
+      </div>`;
+
+    let stepsHTML=`<div class="card"><div class="card-title">Journey Breakdown</div><div class="route-steps">`;
+    result.path.forEach((stId,idx)=>{
+      const s=STATIONS[stId];
+      const isFirst=idx===0, isLast=idx===result.path.length-1;
+      const dotClass=isFirst?"depart":isLast?"arrive":"transit";
+      const icon=isFirst?"🚀":isLast?"🏁":"🔄";
+      let legTime="";
+      if(idx>0){const prevId=result.path[idx-1];legTime=`<span class="leg-time">${matrix[prevId][stId]}min</span>`;}
+      stepsHTML+=`
+        <div class="route-step">
+          <div class="step-left">
+            <div class="step-dot ${dotClass}">${icon}</div>
+            ${!isLast?'<div class="step-line"></div>':''}
+          </div>
+          <div class="step-content">
+            <div class="step-name">${s.name}</div>
+            <div class="step-meta">
+              <span class="step-type ${s.type}">${s.type}</span>
+              <span style="font-size:10px;color:var(--muted)">${s.zone}</span>
+              ${legTime}
+            </div>
+          </div>
+        </div>`;
+    });
+    stepsHTML+=`</div></div>`;
+    area.innerHTML+=stepsHTML;
+
+    area.innerHTML+=`
+      <div class="advisory-box">
+        <div class="advisory-header"><span>🤖</span><strong>Travel Advisory</strong></div>
+        <div class="advisory-text">${advisory.main}</div>
+        <div class="advisory-tip">${advisory.tip}</div>
+      </div>
+      <button class="btn-secondary" onclick="clearRoute()" style="font-size:12px;">← Clear Route</button>`;
+  },300);
+}
+
+// ============================================================
+//  STATS
+// ============================================================
+function showStats(){
+  document.getElementById("welcomeState").style.display="none";
+  const area=document.getElementById("resultsArea");
+  area.style.display="flex"; area.innerHTML="";
+  activePath=null; stopAnimation(); drawMap();
+  document.getElementById("mapBadge").textContent="Network connectivity overview";
+
+  const connData=STATIONS.map(s=>{
+    let count=0;
+    for(let j=0;j<N;j++) if(matrix[s.id][j]>0) count++;
+    return {...s,connections:count,lowConn:count<=1};
+  });
+  const maxConn=Math.max(...connData.map(d=>d.connections));
+
+  let html=`<div class="card"><div class="card-title">Network Connectivity Report</div>
+    <table class="stats-table">
+      <thead><tr><th>Station</th><th>Type</th><th>Links</th><th>Status</th></tr></thead><tbody>`;
+  connData.forEach(d=>{
+    const barW=Math.round((d.connections/maxConn)*70);
+    html+=`<tr>
+      <td><strong>${d.name}</strong></td>
+      <td><span class="step-type ${d.type}">${d.type}</span></td>
+      <td><div class="conn-bar-wrap"><div class="conn-bar" style="width:${barW}px"></div><span class="conn-num">${d.connections}</span></div></td>
+      <td>${d.lowConn?'<span class="alert-badge warn">⚠ Low</span>':'<span class="alert-badge ok">✓ Good</span>'}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>
+    <button class="btn-secondary" onclick="clearRoute()" style="font-size:12px;">← Back</button>`;
+  area.innerHTML=html;
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function quickRoute(from,to){
+  document.getElementById("originSelect").value=from;
+  document.getElementById("destSelect").value=to;
+  findRoute();
+}
+
+function clearRoute(){
+  activePath=null; stopAnimation(); drawMap();
+  document.getElementById("mapBadge").textContent="All 13 Chennai stations • Select a route to highlight path";
+  document.getElementById("resultsArea").style.display="none";
+  document.getElementById("resultsArea").innerHTML="";
+  document.getElementById("welcomeState").style.display="flex";
+}
+
+function showLoading(){
+  document.getElementById("welcomeState").style.display="none";
+  const area=document.getElementById("resultsArea");
+  area.style.display="flex";
+  area.innerHTML=`<div class="loading"><div class="spinner"></div> Running Dijkstra's algorithm...</div>`;
+}
+
+function showError(msg){
+  document.getElementById("welcomeState").style.display="none";
+  const area=document.getElementById("resultsArea");
+  area.style.display="flex";
+  area.innerHTML=`<div class="no-route"><div class="nr-icon">⚠️</div><h3>Input Error</h3><p>${msg}</p></div>`;
+}
+
+init();
+</script>
+</body>
+</html>
